@@ -10,6 +10,7 @@ module "vpc" {
 
   subnet_name = var.subnet_name
   subnet_cidr = var.subnet_cidr
+  subnet_cidr_2 = var.subnet_cidr_2
 
   igw_name         = var.igw_name
   route_table_name = var.route_table_name
@@ -40,4 +41,39 @@ module "ec2" {
   security_group_id  = module.vpc.security_group_id
 
   key_name = "maria_keypair"
+}
+module "rds" {
+  source = "../../modules/rds"
+
+  db_identifier = "phoenix-dev-rds"
+  db_name       = "phoenixdb"
+
+  username = "phoenix123"
+  password = "phoenix123"
+
+  subnet_ids             = module.vpc.subnet_ids
+  vpc_security_group_ids = [module.vpc.security_group_id]
+}
+module "iamroles" {
+  source = "../../modules/iamroles"
+
+  cluster_role_name = "eksClusterRole"
+  node_role_name    = "eksNodeRole"
+}
+module "eks" {
+  source = "../../modules/eks"
+
+  cluster_name          = "phoenix-dev-eks"
+  kubernetes_version    = "1.29"
+
+  cluster_role_arn      = module.iamroles.cluster_role_arn
+  node_role_arn         = module.iamroles.node_role_arn
+
+  vpc_id                = module.vpc.vpc_id
+  subnet_ids            = module.vpc.subnet_ids
+
+  node_instance_type    = "t3.micro"
+  desired_capacity      = 2
+  min_capacity          = 1
+  max_capacity          = 3
 }

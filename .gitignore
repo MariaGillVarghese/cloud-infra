@@ -4,5 +4,3 @@
 *.tfstate.*
 crash.log
 
-# Optional: local variable overrides
-*.tfvars
