@@ -64,27 +64,3 @@ resource "aws_route_table_association" "this_2" {
   route_table_id = aws_route_table.this.id
 }
 
-# ✅ Security Group (SSH)
-resource "aws_security_group" "this" {
-  name   = var.sg_name
-  vpc_id = aws_vpc.this.id
-
-  ingress {
-    description = "SSH Access"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # later restrict to your IP
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = var.sg_name
-  }
-}

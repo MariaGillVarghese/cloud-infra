@@ -8,6 +8,7 @@ resource "aws_eks_cluster" "this" {
 
   vpc_config {
     subnet_ids              = var.subnet_ids
+    security_group_ids      = [aws_security_group.eks_cluster_sg.id]  # ADD THIS
     endpoint_private_access = true
     endpoint_public_access  = true
   }
@@ -29,7 +30,21 @@ resource "aws_eks_node_group" "this" {
   }
 
   instance_types = [var.node_instance_type]
-  ami_type       = "AL2_x86_64" # Amazon Linux 2
+  ami_type       = "AL2_x86_64"
+
+  remote_access {
+    ec2_ssh_key               = var.ssh_key_name
+    source_security_group_ids = [aws_security_group.eks_nodes_sg.id]
+  }
 
   depends_on = [aws_eks_cluster.this]
+}
+resource "aws_security_group" "eks_cluster_sg" {
+  name   = "${var.cluster_name}-cluster-sg"
+  vpc_id = var.vpc_id
+}
+
+resource "aws_security_group" "eks_nodes_sg" {
+  name   = "${var.cluster_name}-nodes-sg"
+  vpc_id = var.vpc_id
 }

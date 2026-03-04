@@ -47,3 +47,7 @@ variable "min_capacity" {
   type    = number
   default = 1
 }
+variable "ssh_key_name" {
+  description = "SSH key name for EKS node group"
+  type        = string
+}

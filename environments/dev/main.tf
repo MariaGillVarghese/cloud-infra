@@ -37,8 +37,8 @@ module "ec2" {
   ami_id        = data.aws_ami.ubuntu_24.id
   instance_type = "t3.micro"
 
-  subnet_id          = module.vpc.subnet_id
-  security_group_id  = module.vpc.security_group_id
+  subnet_id = module.vpc.subnet_id
+  vpc_id    = module.vpc.vpc_id
 
   key_name = "maria_keypair"
 }
@@ -51,8 +51,11 @@ module "rds" {
   username = "phoenix123"
   password = "phoenix123"
 
-  subnet_ids             = module.vpc.subnet_ids
-  vpc_security_group_ids = [module.vpc.security_group_id]
+  subnet_ids = module.vpc.subnet_ids
+  vpc_id     = module.vpc.vpc_id
+
+  ec2_sg_id       = module.ec2.security_group_id
+  eks_nodes_sg_id = module.eks.eks_nodes_sg_id   
 }
 module "iamroles" {
   source = "../../modules/iamroles"
@@ -71,6 +74,7 @@ module "eks" {
 
   vpc_id                = module.vpc.vpc_id
   subnet_ids            = module.vpc.subnet_ids
+  ssh_key_name = var.ssh_key_name
 
   node_instance_type    = "t3.micro"
   desired_capacity      = 2
