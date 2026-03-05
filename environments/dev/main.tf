@@ -60,8 +60,9 @@ module "rds" {
 module "iamroles" {
   source = "../../modules/iamroles"
 
-  cluster_role_name = "eksClusterRole"
-  node_role_name    = "eksNodeRole"
+  cluster_role_name           = "eksClusterRole"
+  node_role_name              = "eksNodeRole"
+  ecs_task_execution_role_name = "ecsTaskExecutionRole"
 }
 module "eks" {
   source = "../../modules/eks"
@@ -80,4 +81,30 @@ module "eks" {
   desired_capacity      = 2
   min_capacity          = 1
   max_capacity          = 3
+}
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  repository_name = "phoenix-dev-ecr"
+  environment     = "dev"
+}
+
+module "ecs" {
+  source = "../../modules/ecs"
+
+  cluster_name = "phoenix-dev-ecs-cluster"
+  service_name = "phoenix-dev-service"
+  task_name    = "phoenix-dev-task"
+
+  container_name  = "phoenix-app"
+  container_image = module.ecr.repository_url
+  container_port  = 80
+
+  execution_role_arn = module.iamroles.ecs_execution_role_arn
+
+  subnet_ids = module.vpc.subnet_ids
+  vpc_id     = module.vpc.vpc_id
+
+  desired_count = 1
 }
